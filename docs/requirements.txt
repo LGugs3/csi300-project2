@@ -1,1 +1,6 @@
 sphinx_rtd_theme
+mysql-connector-python
+matplotlib.pyplot
+matplotlib.cm
+pandas
+numpy
