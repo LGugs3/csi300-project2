@@ -1,7 +1,7 @@
 sakilaConnection module
 =======================
 
-The ``MySQLDatabase`` class:
+The ``MySQLDatabase`` class
 ****************************
 .. autoclass:: sakilaConnection.MySQLDatabase
    :members:

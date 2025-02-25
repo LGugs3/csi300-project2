@@ -48,7 +48,7 @@ class MySQLDatabase:
         :param ``**labels``: captures all labels to format graph.
             Must use keyword args.
         :type ``**labels``: Unpack[dict[str, tuple | int | str]]
-        :returns: No return
+        :return: No return
         :rtype: None
         :meta private:
         """
@@ -109,7 +109,7 @@ class MySQLDatabase:
             Queries created and referenced in `queries.py`
 
         :type query_name: str
-        :returns: No return
+        :return: No return
         :rtype: None
         :meta private:
         """
@@ -152,7 +152,7 @@ class MySQLDatabase:
 
         :param query_name: Name of query in :class:`MySQLQuery`
         :type query_name: str
-        :returns: No return
+        :return: No return
         :rtype: None
         :meta public:
         """
