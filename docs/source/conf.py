@@ -21,7 +21,11 @@ extensions = ['sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']
 
 templates_path = ['_templates']
 exclude_patterns = []
-
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "private-members": True
+}
 
 
 # -- Options for HTML output -------------------------------------------------

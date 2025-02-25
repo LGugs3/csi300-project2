@@ -25,7 +25,7 @@ class MySQLDatabase:
         :type ihost: str
         :param iuser: User to log into db with
         :type iuser: str
-        :param ipass: password for :var:`iuser`
+        :param ipass: password for `iuser`
         :type ipass: str
         :param idb: Name of database
         :type idb: str
