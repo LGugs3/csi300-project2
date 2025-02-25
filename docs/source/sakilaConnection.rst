@@ -1,7 +1,8 @@
 sakilaConnection module
 =======================
 
-.. automodule:: sakilaConnection
-   :members: execute_cursor, new_bar_graph
-   :undoc-members:
+.. autofunction:: sakilaConnection.new_bar_graph
 
+.. autofunction:: sakilaConnection.execute_cursor
+
+.. todo:: Add formatting queries

@@ -80,13 +80,14 @@ def execute_cursor(my_db, query_name: str) -> None:
 
     :param my_db: MySQLConnector object.
         Reference to database to query.
+
     :type my_db: CMySQLConnection | MySQLConnection
     :param query_name: Name of query to fetch.
         Queries created and referenced in `queries.py`
+
     :type query_name: str
     :returns: No return
     :rtype: None
-    .. todo:: add string formatting when required
     """
     # Create Cursor object and get query
     cursor = my_db.cursor()
