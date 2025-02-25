@@ -1,8 +1,16 @@
 sakilaConnection module
 =======================
 
-.. autofunction:: sakilaConnection.new_bar_graph
+Fetch Query
+***********
+.. function:: sakilaConnection.execute_cursor(query: str) -> list
+   :noindex:
 
-.. autofunction:: sakilaConnection.execute_cursor
+   Executes the given SQL query and returns the results.
 
-.. todo:: Add formatting queries
+Create Graphs
+*************
+.. function:: sakilaConnection.new_bar_graph(data: dict) -> None
+   :noindex:
+
+   Generates a bar graph from the provided data.
