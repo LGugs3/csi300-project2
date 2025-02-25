@@ -10,7 +10,8 @@ SakliaQueries documentation
    :maxdepth: 2
    :caption: Contents:
 
-   modules
+   sakilaConnection
+   queries
 
 Indicies and tables
 ===================
