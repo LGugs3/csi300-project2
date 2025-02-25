@@ -15,9 +15,7 @@ documentation for details.
    :maxdepth: 2
    :caption: Contents:
 
-modules
-sakilaConnection
-queries
+   modules
 
 Indicies and tables
 ===================

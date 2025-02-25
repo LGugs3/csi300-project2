@@ -1,4 +1,4 @@
-"""Contain all Queries to MySQL."""
+"""Hold Stuff for Queries."""
 
 
 class MySQLQuery:
@@ -12,18 +12,12 @@ class MySQLQuery:
     query_name: str
         unique name to fetch object by
     full_query: str
-        MySQL query that :class:`mysql.connector` uses
+        MySQL query that :class:``mysql.connector`` uses
     num_columns_returned: int
         Num of columns returned by query
     require_formatting: bool
-        If :param:`full_query` has placeholder values
+        If ``full_query`` has placeholder values
     """
-
-    section_num: int  # Section num for query as denoted in packet
-    query_name: str  # shorthand name for query, used for identifying purposes
-    full_query: str  # full sql query goes here
-    num_columns_returned: int  # num columns expected to be returned by query
-    require_formatting: bool  # If the string has placeholder values
 
     def __init__(
             self,
@@ -33,7 +27,7 @@ class MySQLQuery:
             num_columns_returned: int,
             require_formatting: bool = False
             ):
-        """Init Custom Query class."""
+        """:no-index:Init Custom Query class."""
         self.section_num = section_num
         self.query_name = query_name
         self.full_query = full_query
@@ -77,7 +71,7 @@ ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3]
 def get_query_by_name(name: str) -> MySQLQuery | None:
     """Get query by name.
 
-    :param name: name of query. Matches `MySQLQuery.query_name`
+    :param name: name of query. Matches ``MySQLQuery.query_name``
     :type name: str
     :return: Returns :class:`MySQLQuery` if one is found.
     :rtype: MySQLQuery | None

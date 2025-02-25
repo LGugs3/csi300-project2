@@ -20,10 +20,10 @@ def new_bar_graph(*axes, **labels) -> None:
 
     Parameters
     ----------
-        *axes:
+        `*axes` :
             captures all axes, x and y included.
             Must use positional args.
-        **labels:
+        `**labels` :
             captures all labels to format graph.
             Must use keyword args.
 

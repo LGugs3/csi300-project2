@@ -12,3 +12,4 @@ The ``MySQLQuery`` class
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:
