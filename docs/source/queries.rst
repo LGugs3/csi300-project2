@@ -13,3 +13,8 @@ The ``MySQLQuery`` class
    :undoc-members:
    :show-inheritance:
    :no-index:
+
+Query Getter
+************
+.. autofunction:: queries.get_query_by_name
+   :no-index:

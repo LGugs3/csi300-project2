@@ -13,23 +13,17 @@ import numpy as np
 
 def new_bar_graph(*axes, **labels) -> None:
     """
-    Make bar graph.
+    Make Bar Graph.
 
-    Accept axes and formatting labels and put them
-    into matplotlib to create a bar graph.
+    :param ``*axes``: captures all axes, x and y included.
+        Must use positional args.
+    :type ``*axes``: Unpack[list]
+    :param ``**labels``: captures all labels to format graph.
+        Must use keyword args.
+    :type ``**labels``: Unpack[dict[str, tuple | int | str]]
+    :returns: No return
+    :rtype: None
 
-    Parameters
-    ----------
-        `*axes` :
-            captures all axes, x and y included.
-            Must use positional args.
-        `**labels` :
-            captures all labels to format graph.
-            Must use keyword args.
-
-    Returns
-    -------
-    *None*
     """
     xaxis: list = []
     yaxes: list[list] = []
@@ -79,24 +73,22 @@ def new_bar_graph(*axes, **labels) -> None:
 
 
 def execute_cursor(my_db, query_name: str) -> None:
-    """
-    Fetch Query from MySQL DB.
+    """Fetch Query from MySQL DB.
 
     Fetches query by name provided and formats response into something
     parsable by matplotlib.
 
-    Parameters
-    ----------
-    my_db : CMySQLConnection | MySQLConnection
-        MySQLConnector object.
+    :param my_db: MySQLConnector object.
         Reference to database to query.
-    query_name : string
-        Name of query to fetch.
+    :type my_db: CMySQLConnection | MySQLConnection
+    :param query_name: Name of query to fetch.
         Queries created and referenced in `queries.py`
+    :type query_name: str
+    :returns: No return
+    :rtype: None
 
-    Returns
-    -------
-    *None*
+
+    .. todo:: add string formatting when required
     """
     # Create Cursor object and get query
     cursor = my_db.cursor()
