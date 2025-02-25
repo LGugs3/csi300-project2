@@ -86,8 +86,6 @@ def execute_cursor(my_db, query_name: str) -> None:
     :type query_name: str
     :returns: No return
     :rtype: None
-
-
     .. todo:: add string formatting when required
     """
     # Create Cursor object and get query
