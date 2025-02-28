@@ -15,6 +15,8 @@ class MySQLQuery:
         MySQL query that :class:``mysql.connector`` uses
     num_columns_returned: int
         Num of columns returned by query
+    graph_type: str
+        type of graph used to visualize data
     require_formatting: bool
         If ``full_query`` has placeholder values
     """
@@ -25,6 +27,7 @@ class MySQLQuery:
             query_name: str,
             full_query: str,
             num_columns_returned: int,
+            graph_type: str = "bar",
             require_formatting: bool = False
             ):
         """:no-index:Init Custom Query class."""
@@ -32,6 +35,7 @@ class MySQLQuery:
         self.query_name = query_name
         self.full_query = full_query
         self.num_columns_returned = num_columns_returned
+        self.graph_type = graph_type
         self.require_formatting = require_formatting
 
     def __str__(self):
@@ -67,7 +71,7 @@ GROUP BY DATE(rental_date);
 query1: MySQLQuery = MySQLQuery(1, "Average Rental Duration", querystr1, 2)
 query2: MySQLQuery = MySQLQuery(1, "Num rentals per customer", querystr2, 2)
 query3: MySQLQuery = MySQLQuery(1, "Specified Rental Activity", querystr3, 1,
-                                True)
+                                "bar", True)
 
 # Contains all queries
 ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3]

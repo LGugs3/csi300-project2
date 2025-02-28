@@ -38,14 +38,14 @@ class MySQLDatabase:
             database=idb
             )
 
-    def __new_bar_graph(self, *axes, **labels) -> None:
+    def __new_graph(self, *axes, **labels) -> None:
         r"""
         Make Bar Graph.
 
         :param \*axes: captures all axes, x and y included.
             Must use positional args.
         :type \*axes: Unpack[list]
-        :param \*\*labels: captures all labels to format graph.
+        :param \*\*labels: captures all labels to format and select graph.
             Must use keyword args.
         :type \*\*labels: dict[str, str | tuple]
         :rtype: None
@@ -69,11 +69,13 @@ class MySQLDatabase:
             else plt.figure()
         colors = cm.viridis(np.linspace(0, 1, len(xaxis)))
 
+        assert "graphType" in labels, "Graph must have type."
+        graph = labels["graphType"]
         if len(yaxes) > 1:
             for idx, yaxis in enumerate(yaxes):
-                plt.bar(xaxis, yaxis, color=colors, label=labels["ylabel"+idx])
+                graph(xaxis, yaxis, color=colors, label=labels["ylabel"+idx])
         else:
-            plt.bar(xaxis, *yaxes, color=colors)
+            graph(xaxis, *yaxes, color=colors)
         for key, val in labels.items():
             match key:
                 case "ybounds":
@@ -91,6 +93,8 @@ class MySQLDatabase:
                     assert type(val) is str, "xlabel must be string"
                     plt.title(val)
                 case "figsize":
+                    continue
+                case "graphType":
                     continue
                 case _:
                     raise TypeError("keyword arguement not supported")
@@ -148,14 +152,17 @@ class MySQLDatabase:
                 pass
             except TypeError:
                 pass
+        graph_types = {"bar": plt.bar, "line": plt.plot,
+                       "histo": plt.hist, "pie": plt.pie}
 
-        self.__new_bar_graph(
+        self.__new_graph(
                     *sep_columns,
                     ybounds=(0, math.ceil(float(max(max_val) * 1.5))),
                     xlabel="Customer Name",
                     ylabel="Average Loan Period",
-                    title="Average Loan Period for Every Customer",
-                    figsize=(10, 6)
+                    title=query.query_name,
+                    figsize=(10, 6),
+                    graphType=graph_types[query.graph_type]
                     )
 
     def execute(self, query_name, **formatting) -> None:
