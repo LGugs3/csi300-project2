@@ -34,6 +34,10 @@ class MySQLQuery:
         self.num_columns_returned = num_columns_returned
         self.require_formatting = require_formatting
 
+    def __str__(self):
+        """Return :variable:`self.full_query`."""
+        return self.full_query
+
 
 querystr1 = """
 SELECT CONCAT(c.first_name, ' ', c.last_name) AS full_name,
@@ -53,9 +57,10 @@ GROUP BY customer_id;
 """
 
 querystr3 = """
-SELECT COUNT(DAY(rental_date)) AS num_rentals
-FROM {table}
-WHERE DAY(rental_date) = {day};
+SELECT DATE(rental_date), COUNT(DAY(rental_date)) AS num_rentals
+FROM rental
+WHERE DAY(rental_date) = {day}
+GROUP BY DATE(rental_date);
 """
 # construct all queries.
 # python doesnt like the type hints missing here for some reason

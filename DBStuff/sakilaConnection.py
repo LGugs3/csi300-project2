@@ -39,27 +39,28 @@ class MySQLDatabase:
             )
 
     def __new_bar_graph(self, *axes, **labels) -> None:
-        """
+        r"""
         Make Bar Graph.
 
-        :param ``*axes``: captures all axes, x and y included.
+        :param \*axes: captures all axes, x and y included.
             Must use positional args.
-        :type ``*axes``: Unpack[list]
-        :param ``**labels``: captures all labels to format graph.
+        :type \*axes: Unpack[list]
+        :param \*\*labels: captures all labels to format graph.
             Must use keyword args.
-        :type ``**labels``: Unpack[dict[str, tuple | int | str]]
-        :return: No return
+        :type \*\*labels: dict[str, str | tuple]
         :rtype: None
         :meta private:
         """
         xaxis: list = []
         yaxes: list[list] = []
         for idx, axis in enumerate(axes):
-            assert type(axis) is list, "All axes must be type list"
+            assert type(axis) is list, "All axes must be type list."
             if idx == 0:
                 xaxis = axis
                 continue
             yaxes.append(axis)
+
+        assert len(yaxes) > 0, "You must have at least one series."
 
         if "figsize" in labels:
             assert type(labels["figsize"] is tuple), \
@@ -99,17 +100,19 @@ class MySQLDatabase:
             plt.legend()
         plt.show(block=False)
 
-    def __execute_cursor(self, query_name: str) -> None:
-        """Fetch Query from MySQL DB.
+    def __execute_cursor(self, query_name: str,
+                         formatting: dict[str, str]) -> None:
+        r"""Fetch Query from MySQL DB.
 
         Fetches query by name provided and formats response into something
         parsable by matplotlib.
 
         :param query_name: Name of query to fetch.
             Queries created and referenced in `queries.py`
-
         :type query_name: str
-        :return: No return
+        :param formatting: kwargs for filling placeholder values
+            in `query.full_query`
+        :type formatting: dict[str, str]
         :rtype: None
         :meta private:
         """
@@ -117,8 +120,14 @@ class MySQLDatabase:
         cursor = self.my_db.cursor()
         query = get_query_by_name(query_name)
         assert query is not None, "Invalid query name"
-        # Execute query
-        cursor.execute(query.full_query)
+        assert formatting is not None and query.require_formatting, \
+            "queries that have placeholder values needs formatting."
+
+        # Add formatting if required and execute query
+        if query.require_formatting:
+            cursor.execute(query.full_query.format(**formatting))
+        else:
+            cursor.execute(query.full_query)
         cursor.fetchall
 
         # Prepare lists to swap columns and rows
@@ -137,6 +146,8 @@ class MySQLDatabase:
                 max_val.append(float(max(col)))
             except ValueError:
                 pass
+            except TypeError:
+                pass
 
         self.__new_bar_graph(
                     *sep_columns,
@@ -147,19 +158,21 @@ class MySQLDatabase:
                     figsize=(10, 6)
                     )
 
-    def execute(self, query_name) -> None:
-        """Execute Query with name `query_name`.
+    def execute(self, query_name, **formatting) -> None:
+        r"""Execute Query with name `query_name`.
 
         :param query_name: Name of query in :class:`MySQLQuery`
         :type query_name: str
-        :return: No return
+        :param \*\*formatting: kwargs for formatting
+            `query.full_query` if it is required
+        :type \*\*formatting:
         :rtype: None
         :meta public:
         """
         # Replace 2nd arg to switch query called.
         # Can call execute_cursor multiple times in sequence
         if self.my_db.is_connected():
-            self.__execute_cursor(query_name)
+            self.__execute_cursor(query_name, formatting)
 
 
 if __name__ == "__main__":
@@ -173,5 +186,6 @@ if __name__ == "__main__":
                           "sakila"
                           )
 
-    my_db.execute("Average Rental Duration")
+    # add kwargs for formatting if required
+    my_db.execute("Specified Rental Activity", day=25)
     input("Press any key to continue...")
