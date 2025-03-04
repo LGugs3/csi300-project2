@@ -215,8 +215,7 @@ class MySQLDatabase:
         :rtype: None
         :meta public:
         """
-        # Replace 1st arg to switch query called.
-        # Can call execute_cursor multiple times in sequence
+
         if self.my_db.is_connected():
             self.__execute_cursor(query_name, query_format)
 
@@ -234,5 +233,7 @@ if __name__ == "__main__":
                           )
 
     # add kwargs for formatting if required
+    # Replace 1st arg to switch query called.
+    # Can call execute_cursor multiple times in sequence
     my_db.execute("AggregatedRentalPerRating")
     input("Press any key to continue...")
