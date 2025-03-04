@@ -13,6 +13,10 @@ class MySQLQuery:
         unique name to fetch object by
     full_query: str
         MySQL query that :class:``mysql.connector`` uses
+    xlabel: str
+        describes xaxis on graph
+    ylabel: str
+        describes yaxis on graph
     num_columns_returned: int
         Num of columns returned by query
     graph_type: str
@@ -26,6 +30,8 @@ class MySQLQuery:
             section_num: int,
             query_name: str,
             full_query: str,
+            xlabel: str,
+            ylabel: str,
             num_columns_returned: int,
             graph_type: str = "bar",
             require_formatting: bool = False
@@ -34,6 +40,8 @@ class MySQLQuery:
         self.section_num = section_num
         self.query_name = query_name
         self.full_query = full_query
+        self.xlabel = xlabel
+        self.ylabel = ylabel
         self.num_columns_returned = num_columns_returned
         self.graph_type = graph_type
         self.require_formatting = require_formatting
@@ -61,17 +69,20 @@ GROUP BY customer_id;
 """
 
 querystr3 = """
-SELECT DATE(rental_date), COUNT(DAY(rental_date)) AS num_rentals
+SELECT DATE(rental_date) AS rental_date, COUNT(DAY(rental_date)) AS num_rentals
 FROM rental
 WHERE DAY(rental_date) = {day}
 GROUP BY DATE(rental_date);
 """
 # construct all queries.
 # python doesnt like the type hints missing here for some reason
-query1: MySQLQuery = MySQLQuery(1, "Average Rental Duration", querystr1, 2)
-query2: MySQLQuery = MySQLQuery(1, "Num rentals per customer", querystr2, 2)
-query3: MySQLQuery = MySQLQuery(1, "Specified Rental Activity", querystr3, 1,
-                                "bar", True)
+query1: MySQLQuery = MySQLQuery(1, "AvgRentalDur", querystr1, "Customer Name",
+                                "Average Rental Period", 2)
+query2: MySQLQuery = MySQLQuery(1, "RentalNumPerCustomer", querystr2,
+                                "Customer ID", "Number of Rentals", 2)
+query3: MySQLQuery = MySQLQuery(1, "SpecifiedRentalActivity", querystr3,
+                                "Date of Rental", "Number of Rentals",
+                                1, "bar", True)
 
 # Contains all queries
 ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3]

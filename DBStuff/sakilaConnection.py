@@ -51,6 +51,7 @@ class MySQLDatabase:
         :rtype: None
         :meta private:
         """
+        # seperate xaxis and yaxes
         xaxis: list = []
         yaxes: list[list] = []
         for idx, axis in enumerate(axes):
@@ -62,6 +63,7 @@ class MySQLDatabase:
 
         assert len(yaxes) > 0, "You must have at least one series."
 
+        # custom size of graph on monitor
         if "figsize" in labels:
             assert type(labels["figsize"] is tuple), \
                 "figsize type must be tuple."
@@ -69,16 +71,22 @@ class MySQLDatabase:
             else plt.figure()
         colors = cm.viridis(np.linspace(0, 1, len(xaxis)))
 
+        # plot series
         assert "graphType" in labels, "Graph must have type."
         graph = labels["graphType"]
+        # assign names for each series
         if len(yaxes) > 1:
             for idx, yaxis in enumerate(yaxes):
-                graph(xaxis, yaxis, color=colors, label=labels["ylabel"+idx])
+                graph(xaxis, yaxis, color=colors,
+                      label=labels["colNames"][idx])
         else:
+            # only one sereis, no need for labels
             graph(xaxis, *yaxes, color=colors)
+        # more formatting
         for key, val in labels.items():
             match key:
                 case "ybounds":
+                    # ymin and ymax on graph
                     assert type(val[0]) in (int, float) and \
                         type(val[1]) in (int, float), \
                         "yaxis bounds must be of type int"
@@ -95,6 +103,8 @@ class MySQLDatabase:
                 case "figsize":
                     continue
                 case "graphType":
+                    continue
+                case "colNames":
                     continue
                 case _:
                     raise TypeError("keyword arguement not supported")
@@ -124,8 +134,9 @@ class MySQLDatabase:
         cursor = self.my_db.cursor()
         query = get_query_by_name(query_name)
         assert query is not None, "Invalid query name"
-        assert formatting is not None and query.require_formatting, \
-            "queries that have placeholder values needs formatting."
+        if formatting is None and query.require_formatting:
+            raise AssertionError("Queries that have placeholder values need \
+                                 formatting.")
 
         # Add formatting if required and execute query
         if query.require_formatting:
@@ -134,6 +145,9 @@ class MySQLDatabase:
             cursor.execute(query.full_query)
         cursor.fetchall
 
+        # gets y axis column names(first element in for xaxis)
+        ycolumn_names = [ele[0] for idx, ele in enumerate(cursor.description)
+                         if idx != 0]
         # Prepare lists to swap columns and rows
         all_columns: list[list] = []
         all_columns = [[col for col in i] for i in cursor]
@@ -145,7 +159,10 @@ class MySQLDatabase:
 
         # get max value to set y bounds
         max_val: list[float] = []
-        for col in sep_columns:
+        # iterate over every column except the first(x axis)
+        iter_cols = iter(sep_columns)
+        next(iter_cols)
+        for col in iter_cols:
             try:
                 max_val.append(float(max(col)))
             except ValueError:
@@ -158,10 +175,10 @@ class MySQLDatabase:
         self.__new_graph(
                     *sep_columns,
                     ybounds=(0, math.ceil(float(max(max_val) * 1.5))),
-                    xlabel="Customer Name",
-                    ylabel="Average Loan Period",
+                    colNames=ycolumn_names,
+                    xlabel=query.xlabel,
+                    ylabel=query.ylabel,
                     title=query.query_name,
-                    figsize=(10, 6),
                     graphType=graph_types[query.graph_type]
                     )
 
@@ -194,5 +211,5 @@ if __name__ == "__main__":
                           )
 
     # add kwargs for formatting if required
-    my_db.execute("Specified Rental Activity", day=25)
+    my_db.execute("RentalNumPerCustomer")
     input("Press any key to continue...")
