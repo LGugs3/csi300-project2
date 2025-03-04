@@ -74,6 +74,14 @@ FROM rental
 WHERE DAY(rental_date) = {day}
 GROUP BY DATE(rental_date);
 """
+
+querystr4 = """
+SELECT f.rating, COUNT(r.rental_id) AS num_rentals
+FROM rental r
+JOIN inventory i ON r.inventory_id = i.inventory_id
+JOIN film f ON i.film_id = f.film_id
+GROUP BY f.rating;
+"""
 # construct all queries.
 # python doesnt like the type hints missing here for some reason
 query1: MySQLQuery = MySQLQuery(1, "AvgRentalDur", querystr1, "Customer Name",
@@ -83,9 +91,11 @@ query2: MySQLQuery = MySQLQuery(1, "RentalNumPerCustomer", querystr2,
 query3: MySQLQuery = MySQLQuery(1, "SpecifiedRentalActivity", querystr3,
                                 "Date of Rental", "Number of Rentals",
                                 1, "bar", True)
+query4: MySQLQuery = MySQLQuery(2, "AggregatedRentalPerRating", querystr4,
+                                "Rating", "Number Rentals", 2, "pie")
 
 # Contains all queries
-ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3]
+ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3, query4]
 
 
 def get_query_by_name(name: str) -> MySQLQuery | None:

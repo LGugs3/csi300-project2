@@ -30,7 +30,6 @@ class MySQLDatabase:
         :param idb: Name of database
         :type idb: str
         """
-        # change user and pass as applicable
         self.my_db = mysql.connector.connect(
             host=ihost,
             user=iuser,
@@ -38,16 +37,36 @@ class MySQLDatabase:
             database=idb
             )
 
-    def __new_graph(self, *axes, **labels) -> None:
+    def __constuct_pie(self, labels, sizes, title) -> None:
+        """
+        Generate a pie chart.
+
+        Pie charts require different syntax than regular charts,
+        requiring seperated fxn.
+
+        :param labels: text to describe each slice
+        :type labels: str
+        :param sizes: data
+        :type sizes: ArrayLike
+        :param title: Title of pie chart
+        :type title: str
+        """
+        color = cm.viridis(np.linspace(0, 1, len(sizes)))
+        plt.pie(sizes, labels=labels, colors=color, autopct='%1.1f%%')
+        plt.axis("equal")
+        plt.title(title)
+        plt.show(block=False)
+
+    def __new_graph(self, *axes, **kwargs) -> None:
         r"""
-        Make Bar Graph.
+        Make Graph with matplotlib.
 
         :param \*axes: captures all axes, x and y included.
             Must use positional args.
         :type \*axes: Unpack[list]
-        :param \*\*labels: captures all labels to format and select graph.
+        :param \*\*kwargs: captures all kwargs to format and select graph.
             Must use keyword args.
-        :type \*\*labels: dict[str, str | tuple]
+        :type \*\*kwargs: dict[str, str | tuple]
         :rtype: None
         :meta private:
         """
@@ -64,26 +83,28 @@ class MySQLDatabase:
         assert len(yaxes) > 0, "You must have at least one series."
 
         # custom size of graph on monitor
-        if "figsize" in labels:
-            assert type(labels["figsize"] is tuple), \
+        if "figsize" in kwargs:
+            assert type(kwargs["figsize"] is tuple), \
                 "figsize type must be tuple."
-        plt.figure(figsize=labels["figsize"]) if "figsize" in labels \
+        plt.figure(figsize=kwargs["figsize"]) if "figsize" in kwargs \
             else plt.figure()
-        colors = cm.viridis(np.linspace(0, 1, len(xaxis)))
 
+        # need pie chart
+        if kwargs["graphType"] == plt.pie:
+            self.__constuct_pie(xaxis, yaxes[0], kwargs["title"])
+            return
         # plot series
-        assert "graphType" in labels, "Graph must have type."
-        graph = labels["graphType"]
+        assert "graphType" in kwargs, "Graph must have type."
+        graph = kwargs["graphType"]
         # assign names for each series
         if len(yaxes) > 1:
             for idx, yaxis in enumerate(yaxes):
-                graph(xaxis, yaxis, color=colors,
-                      label=labels["colNames"][idx])
+                graph(xaxis, yaxis, label=kwargs["colNames"][idx])
         else:
             # only one sereis, no need for labels
-            graph(xaxis, *yaxes, color=colors)
+            graph(xaxis, *yaxes)
         # more formatting
-        for key, val in labels.items():
+        for key, val in kwargs.items():
             match key:
                 case "ybounds":
                     # ymin and ymax on graph
@@ -115,7 +136,7 @@ class MySQLDatabase:
         plt.show(block=False)
 
     def __execute_cursor(self, query_name: str,
-                         formatting: dict[str, str]) -> None:
+                         query_format: dict[str, str]) -> None:
         r"""Fetch Query from MySQL DB.
 
         Fetches query by name provided and formats response into something
@@ -124,9 +145,9 @@ class MySQLDatabase:
         :param query_name: Name of query to fetch.
             Queries created and referenced in `queries.py`
         :type query_name: str
-        :param formatting: kwargs for filling placeholder values
+        :param query_format: kwargs for filling placeholder values
             in `query.full_query`
-        :type formatting: dict[str, str]
+        :type query_format: dict[str, str]
         :rtype: None
         :meta private:
         """
@@ -134,13 +155,13 @@ class MySQLDatabase:
         cursor = self.my_db.cursor()
         query = get_query_by_name(query_name)
         assert query is not None, "Invalid query name"
-        if formatting is None and query.require_formatting:
+        if query_format is None and query.require_formatting:
             raise AssertionError("Queries that have placeholder values need \
                                  formatting.")
 
         # Add formatting if required and execute query
         if query.require_formatting:
-            cursor.execute(query.full_query.format(**formatting))
+            cursor.execute(query.full_query.format(**query_format))
         else:
             cursor.execute(query.full_query)
         cursor.fetchall
@@ -169,6 +190,7 @@ class MySQLDatabase:
                 pass
             except TypeError:
                 pass
+        # dont use histogram
         graph_types = {"bar": plt.bar, "line": plt.plot,
                        "histo": plt.hist, "pie": plt.pie}
 
@@ -182,21 +204,21 @@ class MySQLDatabase:
                     graphType=graph_types[query.graph_type]
                     )
 
-    def execute(self, query_name, **formatting) -> None:
+    def execute(self, query_name, **query_format) -> None:
         r"""Execute Query with name `query_name`.
 
         :param query_name: Name of query in :class:`MySQLQuery`
         :type query_name: str
-        :param \*\*formatting: kwargs for formatting
+        :param \*\*query_format: kwargs for filling query placeholder values
             `query.full_query` if it is required
-        :type \*\*formatting:
+        :type \*\*query_format: dict[str, str]
         :rtype: None
         :meta public:
         """
-        # Replace 2nd arg to switch query called.
+        # Replace 1st arg to switch query called.
         # Can call execute_cursor multiple times in sequence
         if self.my_db.is_connected():
-            self.__execute_cursor(query_name, formatting)
+            self.__execute_cursor(query_name, query_format)
 
 
 if __name__ == "__main__":
@@ -204,6 +226,7 @@ if __name__ == "__main__":
 
     load_dotenv(".mysql.env", verbose=True)
 
+    # change user and pass as applicable
     my_db = MySQLDatabase("localhost",
                           "readonly",
                           os.getenv("MYSQL_READ"),
@@ -211,5 +234,5 @@ if __name__ == "__main__":
                           )
 
     # add kwargs for formatting if required
-    my_db.execute("RentalNumPerCustomer")
+    my_db.execute("AggregatedRentalPerRating")
     input("Press any key to continue...")
