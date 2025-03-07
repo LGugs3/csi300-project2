@@ -234,5 +234,6 @@ if __name__ == "__main__":
     # add kwargs for formatting if required
     # Replace 1st arg to switch query called.
     # Can call execute_cursor multiple times in sequence
-    my_db.execute("AggregatedRentalPerRating")
+    my_db.execute("AvgRentalsPerDay")
+    my_db.execute("TotalRentalsPerRating")
     input("Press any key to continue...")

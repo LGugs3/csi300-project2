@@ -7,7 +7,7 @@ class MySQLQuery:
 
     Parameters
     ----------
-    section_num: int
+    section_num: float
         matches section number on packet
     query_name: str
         unique name to fetch object by
@@ -27,7 +27,7 @@ class MySQLQuery:
 
     def __init__(
             self,
-            section_num: int,
+            section_num: float,
             query_name: str,
             full_query: str,
             xlabel: str,
@@ -76,26 +76,45 @@ GROUP BY DATE(rental_date);
 """
 
 querystr4 = """
-SELECT f.rating, COUNT(r.rental_id) AS num_rentals
+SELECT c.name, COUNT(r.rental_id) AS num_rentals
+FROM rental r
+JOIN inventory i on r.inventory_id = i.inventory_id
+JOIN film_category fc on i.film_id = fc.film_id
+JOIN category c on c.category_id = fc.category_id
+GROUP BY c.name;
+"""
+
+querystr5 = """
+SELECT name, AVG(count_rentals) AS avg_rentals
+FROM (
+SELECT c.name, count(DATE(r.rental_date)) as count_rentals
 FROM rental r
 JOIN inventory i ON r.inventory_id = i.inventory_id
-JOIN film f ON i.film_id = f.film_id
-GROUP BY f.rating;
+JOIN film_category fc ON i.film_id = fc.film_id
+JOIN category c ON c.category_id = fc.category_id
+GROUP BY c.name, DATE(r.rental_date)
+) AS Z
+GROUP BY name;
 """
+
+
 # construct all queries.
 # python doesnt like the type hints missing here for some reason
-query1: MySQLQuery = MySQLQuery(1, "AvgRentalDur", querystr1, "Customer Name",
-                                "Average Rental Period", 2)
-query2: MySQLQuery = MySQLQuery(1, "RentalNumPerCustomer", querystr2,
+query1: MySQLQuery = MySQLQuery(1.2, "AvgRentalDur", querystr1,
+                                "Customer Name", "Average Rental Period", 2)
+query2: MySQLQuery = MySQLQuery(1.1, "RentalNumPerCustomer", querystr2,
                                 "Customer ID", "Number of Rentals", 2)
-query3: MySQLQuery = MySQLQuery(1, "SpecifiedRentalActivity", querystr3,
+query3: MySQLQuery = MySQLQuery(1.3, "SpecifiedRentalActivity", querystr3,
                                 "Date of Rental", "Number of Rentals",
                                 1, "bar", True)
-query4: MySQLQuery = MySQLQuery(2, "AggregatedRentalPerRating", querystr4,
-                                "Rating", "Number Rentals", 2, "pie")
+query4: MySQLQuery = MySQLQuery(2.1, "TotalRentalsPerRating", querystr4,
+                                "Rating", "Number Rentals", 2)
+query5: MySQLQuery = MySQLQuery(2.2, "AvgRentalsPerDay", querystr5,
+                                "Category", "Num Rentals", 2)
+
 
 # Contains all queries
-ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3, query4]
+ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3, query4, query5]
 
 
 def get_query_by_name(name: str) -> MySQLQuery | None:
