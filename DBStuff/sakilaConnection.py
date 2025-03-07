@@ -7,7 +7,7 @@ import math
 import warnings
 import os
 from dotenv import load_dotenv
-from queries import get_query_by_name
+from queries import get_query_by_name, get_all_queries
 import numpy as np
 
 
@@ -93,10 +93,12 @@ class MySQLDatabase:
         if kwargs["graphType"] == plt.pie:
             self.__constuct_pie(xaxis, yaxes[0], kwargs["title"])
             return
+
         # plot series
         assert "graphType" in kwargs, "Graph must have type."
         graph = kwargs["graphType"]
-        # assign names for each series
+
+        # assign names for each series(displayed on legend)
         if len(yaxes) > 1:
             for idx, yaxis in enumerate(yaxes):
                 graph(xaxis, yaxis, label=kwargs["colNames"][idx])
@@ -121,6 +123,7 @@ class MySQLDatabase:
                 case "title":
                     assert type(val) is str, "xlabel must be string"
                     plt.title(val)
+                # these keys were used earlier
                 case "figsize":
                     continue
                 case "graphType":
@@ -162,7 +165,11 @@ class MySQLDatabase:
 
         # Add formatting if required and execute query
         if query.require_formatting:
-            cursor.execute(query.full_query.format(**query_format))
+            if query_format == {} or query_format is None:
+                cursor.execute(
+                    query.full_query.format(**query.default_formatting))
+            else:
+                cursor.execute(query.full_query.format(**query_format))
         else:
             cursor.execute(query.full_query)
         cursor.fetchall
@@ -170,6 +177,7 @@ class MySQLDatabase:
         assert cursor.rowcount > 0, "Invalid Query, check formatting"
 
         # gets y axis column names(first element in for xaxis)
+        # Legend of graph are names of columns
         ycolumn_names = [ele[0] for idx, ele in enumerate(cursor.description)
                          if idx != 0]
         # Prepare lists to swap columns and rows
@@ -235,14 +243,21 @@ if __name__ == "__main__":
                           "sakila"
                           )
 
-    # add kwargs for formatting if required
+    # add kwargs for formatting when required
     # Replace 1st arg to switch query called.
-    # Can call execute_cursor multiple times in sequence
+    # Can call execute multiple times in sequence
+
+    # current method executes all queries sequentially.
+    # Remove generator and for loop to specifically call select queries
+    query_gen = get_all_queries()
     try:
-        my_db.execute("AvgRentalRatePerCategory", category="Action")
+        for query in query_gen:
+            my_db.execute(query)
     except AssertionError as e:
         print(e.__class__.__name__, e, sep='\n')
     except ValueError as e:
         print(e.__class__.__name__, e, sep='\n')
+    except KeyError as e:
+        print(e.__class__.__name__, e, "Check query formatting", sep='\n')
 
     input("Press any key to continue...")

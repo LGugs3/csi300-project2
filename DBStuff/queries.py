@@ -1,4 +1,5 @@
 """Hold Stuff for Queries."""
+from typing import Generator
 
 
 class MySQLQuery:
@@ -23,6 +24,8 @@ class MySQLQuery:
         type of graph used to visualize data
     require_formatting: bool
         If ``full_query`` has placeholder values
+    default_formatting: dict[str, str]
+        Formatting to use if none is given and formatting is required
     """
 
     def __init__(
@@ -34,7 +37,8 @@ class MySQLQuery:
             ylabel: str,
             num_columns_returned: int,
             graph_type: str = "bar",
-            require_formatting: bool = False
+            require_formatting: bool = False,
+            default_formatting: dict[str, str] = {}
             ):
         """:no-index:Init Custom Query class."""
         self.section_num = section_num
@@ -45,6 +49,7 @@ class MySQLQuery:
         self.num_columns_returned = num_columns_returned
         self.graph_type = graph_type
         self.require_formatting = require_formatting
+        self.default_formatting = default_formatting
 
     def __str__(self):
         """Return :variable:`self.full_query`."""
@@ -149,33 +154,67 @@ ORDER BY num_rentals DESC
 LIMIT 10;
 """
 
+querystr10 = """
+SELECT a.address, SUM(p.amount) AS total_revenue
+FROM payment p
+JOIN staff sa ON p.staff_id = sa.staff_id
+JOIN store so ON sa.store_id = so.store_id
+JOIN address a ON so.address_id = a.address_id
+GROUP BY a.address;
+"""
+
+querystr11 = """
+SELECT f.title, AVG(p.amount) AS avg_payment
+FROM payment p
+JOIN rental r ON p.rental_id = r.rental_id
+JOIN inventory i ON r.inventory_id = i.inventory_id
+JOIN film f on i.film_id = f.film_id
+GROUP BY f.title;
+"""
+
+querystr12 = """
+SELECT DATE_FORMAT(payment_date, '%Y-%m') AS date,\
+    SUM(amount) AS total_revenue, COUNT(payment_id) as num_payments
+FROM payment
+GROUP BY date;
+"""
+
 # construct all queries.
 # python doesnt like the type hints missing here for some reason
-query1: MySQLQuery = MySQLQuery(1.2, "AvgRentalDur", querystr1,
+query1: MySQLQuery = MySQLQuery(1.2, "Average Rental Duration", querystr1,
                                 "Customer Name", "Average Rental Period", 2)
-query2: MySQLQuery = MySQLQuery(1.1, "RentalNumPerCustomer", querystr2,
-                                "Customer ID", "Number of Rentals", 2)
-query3: MySQLQuery = MySQLQuery(1.3, "SpecifiedRentalActivity", querystr3,
+query2: MySQLQuery = MySQLQuery(1.1, "Number of Rentals Per Customer",
+                                querystr2, "Customer ID", "Number of Rentals",
+                                2)
+query3: MySQLQuery = MySQLQuery(1.3, "Specified Rental Activity", querystr3,
                                 "Date of Rental", "Number of Rentals",
-                                1, "bar", True)
-query4: MySQLQuery = MySQLQuery(2.1, "TotalRentalsPerRating", querystr4,
+                                1, "bar", True, {"day": "24"})
+query4: MySQLQuery = MySQLQuery(2.1, "Total Rentals Per Rating", querystr4,
                                 "Rating", "Number Rentals", 2)
-query5: MySQLQuery = MySQLQuery(2.2, "AvgRentalRatePerCategory", querystr5,
-                                "Category", "Average Rentals per Day", 2)
-query6: MySQLQuery = MySQLQuery(2.3, "TopRentalsInCategory", querystr6,
+query5: MySQLQuery = MySQLQuery(2.2, "Average Rental Rate Per Category",
+                                querystr5, "Category",
+                                "Average Rentals per Day", 2)
+query6: MySQLQuery = MySQLQuery(2.3, "Top Rentals In Category", querystr6,
                                 "Title of DVD", "Total Rentals", 2,
-                                "bar", True)
-query7: MySQLQuery = MySQLQuery(3.1, "NumRentalsPerActor", querystr7,
+                                "bar", True, {"category": "Action"})
+query7: MySQLQuery = MySQLQuery(3.1, "Number of Rentals Per Actor", querystr7,
                                 "Actor Name", "Number of Rentals", 2)
-query8: MySQLQuery = MySQLQuery(3.2, "NumRentalsPerActorInCategory", querystr8,
-                                "Actor Name", "Number of Rentals", 2,
-                                "bar", True)
-query9: MySQLQuery = MySQLQuery(3.3, "TopActorsByRentalCount", querystr9,
+query8: MySQLQuery = MySQLQuery(3.2, "Number of Rentals Per Actor In Category",
+                                querystr8, "Actor Name", "Number of Rentals",
+                                2, "bar", True, {"category": "Action"})
+query9: MySQLQuery = MySQLQuery(3.3, "Top Actors By Rental Count", querystr9,
                                 "Actor Name", "Number of Rentals", 2)
+query10: MySQLQuery = MySQLQuery(4.1, "Total Revenue Per Store", querystr10,
+                                 "Store Address", "Total Revenue", 2, "pie")
+query11: MySQLQuery = MySQLQuery(4.2, "Average Payment Per Title", querystr11,
+                                 "DVD Title", "Average Payment", 2)
+query12: MySQLQuery = MySQLQuery(4.3, "Total Monthly Revenue", querystr12,
+                                 "Month", "Total Revenue", 2, "line")
 
 # Contains all queries
 ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3, query4, query5,
-                                 query6, query7, query8]
+                                 query6, query7, query8, query9, query10,
+                                 query11, query12]
 
 
 def get_query_by_name(name: str) -> MySQLQuery | None:
@@ -190,3 +229,28 @@ def get_query_by_name(name: str) -> MySQLQuery | None:
         if query.query_name == name:
             return query
     return None
+
+
+def get_query_by_section(section_num: float) -> MySQLQuery | None:
+    """Get query by section num.
+
+    :param section_num: section number of query.
+        Matches ``MySQLQuery.section_num``
+    :type section_num: float
+    :return: Returns :class:`MySQLQuery` if query is found.
+    :rtype: MySQLQuery | None
+    """
+    for query in ALL_QUERIES:
+        if query.section_num == section_num:
+            return query
+    return None
+
+
+def get_all_queries() -> Generator[str, None, None]:
+    """Yield Queries one at a time.
+
+    :yield: Next query in list
+    :rtype: Generator[str, None, None]
+    """
+    for query in ALL_QUERIES:
+        yield query.query_name
