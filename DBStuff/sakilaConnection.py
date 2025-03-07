@@ -215,7 +215,6 @@ class MySQLDatabase:
         :rtype: None
         :meta public:
         """
-
         if self.my_db.is_connected():
             self.__execute_cursor(query_name, query_format)
 
