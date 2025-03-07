@@ -85,18 +85,25 @@ GROUP BY c.name;
 """
 
 querystr5 = """
-SELECT name, AVG(count_rentals) AS avg_rentals
-FROM (
-SELECT c.name, count(DATE(r.rental_date)) as count_rentals
-FROM rental r
-JOIN inventory i ON r.inventory_id = i.inventory_id
-JOIN film_category fc ON i.film_id = fc.film_id
-JOIN category c ON c.category_id = fc.category_id
-GROUP BY c.name, DATE(r.rental_date)
-) AS Z
-GROUP BY name;
+select c.name, AVG(f.rental_rate) as avg_rental_rate
+from film f
+join film_category fc ON f.film_id = fc.film_id
+join category c ON fc.category_id = c.category_id
+GROUP BY c.name;
 """
 
+querystr6 = """
+select f.title, count(r.rental_id) as num_rentals
+from rental r
+JOIN inventory i ON r.inventory_id = i.inventory_id
+JOIN film f ON i.film_id = f.film_id
+JOIN film_category fc ON i.film_id = fc.film_id
+JOIN category c ON c.category_id = fc.category_id
+WHERE c.name = "{category}"
+GROUP BY f.title
+ORDER BY num_rentals DESC
+LIMIT 5;
+"""
 
 # construct all queries.
 # python doesnt like the type hints missing here for some reason
@@ -109,12 +116,15 @@ query3: MySQLQuery = MySQLQuery(1.3, "SpecifiedRentalActivity", querystr3,
                                 1, "bar", True)
 query4: MySQLQuery = MySQLQuery(2.1, "TotalRentalsPerRating", querystr4,
                                 "Rating", "Number Rentals", 2)
-query5: MySQLQuery = MySQLQuery(2.2, "AvgRentalsPerDay", querystr5,
-                                "Category", "Num Rentals", 2)
-
+query5: MySQLQuery = MySQLQuery(2.2, "AvgRentalRatePerCategory", querystr5,
+                                "Category", "Average Rental Rate", 2)
+query6: MySQLQuery = MySQLQuery(2.3, "TopRentalsInCategory", querystr6,
+                                "Title of DVD", "Total Rentals", 2,
+                                "bar", True)
 
 # Contains all queries
-ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3, query4, query5]
+ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3, query4, query5,
+                                 query6]
 
 
 def get_query_by_name(name: str) -> MySQLQuery | None:

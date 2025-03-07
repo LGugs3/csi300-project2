@@ -152,7 +152,7 @@ class MySQLDatabase:
         :meta private:
         """
         # Create Cursor object and get query
-        cursor = self.my_db.cursor()
+        cursor = self.my_db.cursor(buffered=True)
         query = get_query_by_name(query_name)
         assert query is not None, "Invalid query name"
         if query_format is None and query.require_formatting:
@@ -165,6 +165,8 @@ class MySQLDatabase:
         else:
             cursor.execute(query.full_query)
         cursor.fetchall
+
+        assert cursor.rowcount > 0, "Invalid Query, check formatting"
 
         # gets y axis column names(first element in for xaxis)
         ycolumn_names = [ele[0] for idx, ele in enumerate(cursor.description)
@@ -203,6 +205,7 @@ class MySQLDatabase:
                     title=query.query_name,
                     graphType=graph_types[query.graph_type]
                     )
+        cursor.close()
 
     def execute(self, query_name, **query_format) -> None:
         r"""Execute Query with name `query_name`.
@@ -234,6 +237,9 @@ if __name__ == "__main__":
     # add kwargs for formatting if required
     # Replace 1st arg to switch query called.
     # Can call execute_cursor multiple times in sequence
-    my_db.execute("AvgRentalsPerDay")
-    my_db.execute("TotalRentalsPerRating")
+    try:
+        my_db.execute("TopRentalsInCategory", category="Action")
+    except AssertionError as e:
+        print(e.__class__.__name__, e, sep='\n')
+
     input("Press any key to continue...")
