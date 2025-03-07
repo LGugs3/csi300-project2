@@ -85,11 +85,16 @@ GROUP BY c.name;
 """
 
 querystr5 = """
-select c.name, AVG(f.rental_rate) as avg_rental_rate
-from film f
-join film_category fc ON f.film_id = fc.film_id
-join category c ON fc.category_id = c.category_id
-GROUP BY c.name;
+SELECT name, AVG(count_rentals) AS avg_rentals
+FROM (
+SELECT c.name, count(DATE(r.rental_date)) as count_rentals
+FROM rental r
+JOIN inventory i ON r.inventory_id = i.inventory_id
+JOIN film_category fc ON i.film_id = fc.film_id
+JOIN category c ON c.category_id = fc.category_id
+GROUP BY c.name, DATE(r.rental_date)
+) AS Z
+GROUP BY name;
 """
 
 querystr6 = """
@@ -105,6 +110,45 @@ ORDER BY num_rentals DESC
 LIMIT 5;
 """
 
+querystr7 = """
+select CONCAT(a.first_name, ' ', a.last_name) AS full_name, COUNT(r.rental_id)\
+    AS num_rentals
+from film f
+join film_actor fa ON f.film_id = fa.film_id
+JOIN actor a ON fa.actor_id = a.actor_id
+JOIN inventory i ON f.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+GROUP BY a.first_name, a.last_name;
+"""
+
+querystr8 = """
+select CONCAT(a.first_name, ' ', a.last_name) AS full_name, COUNT(r.rental_id)\
+    AS num_rentals
+from film f
+join film_actor fa ON f.film_id = fa.film_id
+JOIN actor a ON fa.actor_id = a.actor_id
+JOIN inventory i ON f.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+JOIN film_category fc ON f.film_id = fc.film_id
+JOIN category c ON fc.category_id = c.category_id
+WHERE c.name = "{category}"
+GROUP BY a.first_name, a.last_name
+ORDER BY num_rentals DESC;
+"""
+
+querystr9 = """
+SELECT CONCAT(a.first_name, ' ', a.last_name) AS full_name, COUNT(r.rental_id)\
+    AS num_rentals
+FROM film f
+join film_actor fa ON f.film_id = fa.film_id
+JOIN actor a ON fa.actor_id = a.actor_id
+JOIN inventory i ON f.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+GROUP BY a.first_name, a.last_name
+ORDER BY num_rentals DESC
+LIMIT 10;
+"""
+
 # construct all queries.
 # python doesnt like the type hints missing here for some reason
 query1: MySQLQuery = MySQLQuery(1.2, "AvgRentalDur", querystr1,
@@ -117,14 +161,21 @@ query3: MySQLQuery = MySQLQuery(1.3, "SpecifiedRentalActivity", querystr3,
 query4: MySQLQuery = MySQLQuery(2.1, "TotalRentalsPerRating", querystr4,
                                 "Rating", "Number Rentals", 2)
 query5: MySQLQuery = MySQLQuery(2.2, "AvgRentalRatePerCategory", querystr5,
-                                "Category", "Average Rental Rate", 2)
+                                "Category", "Average Rentals per Day", 2)
 query6: MySQLQuery = MySQLQuery(2.3, "TopRentalsInCategory", querystr6,
                                 "Title of DVD", "Total Rentals", 2,
                                 "bar", True)
+query7: MySQLQuery = MySQLQuery(3.1, "NumRentalsPerActor", querystr7,
+                                "Actor Name", "Number of Rentals", 2)
+query8: MySQLQuery = MySQLQuery(3.2, "NumRentalsPerActorInCategory", querystr8,
+                                "Actor Name", "Number of Rentals", 2,
+                                "bar", True)
+query9: MySQLQuery = MySQLQuery(3.3, "TopActorsByRentalCount", querystr9,
+                                "Actor Name", "Number of Rentals", 2)
 
 # Contains all queries
 ALL_QUERIES: list[MySQLQuery] = [query1, query2, query3, query4, query5,
-                                 query6]
+                                 query6, query7, query8]
 
 
 def get_query_by_name(name: str) -> MySQLQuery | None:

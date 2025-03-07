@@ -154,9 +154,10 @@ class MySQLDatabase:
         # Create Cursor object and get query
         cursor = self.my_db.cursor(buffered=True)
         query = get_query_by_name(query_name)
-        assert query is not None, "Invalid query name"
+        assert query is not None, "Invalid query name, is query included in\
+            ALL_QUERIES?"
         if query_format is None and query.require_formatting:
-            raise AssertionError("Queries that have placeholder values need \
+            raise ValueError("Queries that have placeholder values need \
                                  formatting.")
 
         # Add formatting if required and execute query
@@ -238,8 +239,10 @@ if __name__ == "__main__":
     # Replace 1st arg to switch query called.
     # Can call execute_cursor multiple times in sequence
     try:
-        my_db.execute("TopRentalsInCategory", category="Action")
+        my_db.execute("AvgRentalRatePerCategory", category="Action")
     except AssertionError as e:
+        print(e.__class__.__name__, e, sep='\n')
+    except ValueError as e:
         print(e.__class__.__name__, e, sep='\n')
 
     input("Press any key to continue...")
