@@ -103,9 +103,9 @@ class MySQLDatabase:
             for idx, yaxis in enumerate(yaxes):
                 graph(xaxis, yaxis, label=kwargs["colNames"][idx])
         else:
-            # only one sereis, no need for labels
+            # only one series, no need for labels
             graph(xaxis, *yaxes)
-        # more formatting
+        # more graph formatting
         for key, val in kwargs.items():
             match key:
                 case "ybounds":
@@ -229,6 +229,8 @@ class MySQLDatabase:
         """
         if self.my_db.is_connected():
             self.__execute_cursor(query_name, query_format)
+        else:
+            print("Database is not connected.")
 
 
 if __name__ == "__main__":

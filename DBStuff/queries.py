@@ -21,11 +21,12 @@ class MySQLQuery:
     num_columns_returned: int
         Num of columns returned by query
     graph_type: str
-        type of graph used to visualize data
+        type of graph used to visualize data, defaults to "bar"
     require_formatting: bool
-        If ``full_query`` has placeholder values
+        If ``full_query`` has placeholder values, defaults to False
     default_formatting: dict[str, str]
-        Formatting to use if none is given and formatting is required
+        Formatting to use if none is given and formatting is required.
+        Deafults to an empty dict
     """
 
     def __init__(

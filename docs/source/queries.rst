@@ -8,6 +8,10 @@ The ``MySQLQuery`` class
    :undoc-members:
    :show-inheritance:
 
-Query Getter
-************
+Query Getters
+*************
 .. autofunction:: queries.get_query_by_name
+
+.. autofunction:: queries.get_query_by_section
+
+.. autofunction:: queries.get_all_queries
