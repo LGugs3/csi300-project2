@@ -65,7 +65,7 @@ FROM rental r
 JOIN customer c ON r.customer_id = c.customer_id
 GROUP BY c.first_name, c.last_name
 ORDER BY avg_loan_period DESC
-LIMIT 100;
+LIMIT {limit};
 """
 
 querystr2 = """
@@ -124,7 +124,8 @@ join film_actor fa ON f.film_id = fa.film_id
 JOIN actor a ON fa.actor_id = a.actor_id
 JOIN inventory i ON f.film_id = i.film_id
 JOIN rental r ON i.inventory_id = r.inventory_id
-GROUP BY a.first_name, a.last_name;
+GROUP BY a.first_name, a.last_name
+LIMIT 100;
 """
 
 querystr8 = """
@@ -139,7 +140,8 @@ JOIN film_category fc ON f.film_id = fc.film_id
 JOIN category c ON fc.category_id = c.category_id
 WHERE c.name = "{category}"
 GROUP BY a.first_name, a.last_name
-ORDER BY num_rentals DESC;
+ORDER BY num_rentals DESC
+LIMIT 100;
 """
 
 querystr9 = """
@@ -170,7 +172,8 @@ FROM payment p
 JOIN rental r ON p.rental_id = r.rental_id
 JOIN inventory i ON r.inventory_id = i.inventory_id
 JOIN film f on i.film_id = f.film_id
-GROUP BY f.title;
+GROUP BY f.title
+LIMIT {limit};
 """
 
 querystr12 = """
@@ -183,8 +186,9 @@ GROUP BY date;
 # construct all queries.
 # python doesnt like the type hints missing here for some reason
 query1: MySQLQuery = MySQLQuery(1.2, "Average Rental Duration", querystr1,
-                                "Customer Name", "Average Rental Period", 2)
-query2: MySQLQuery = MySQLQuery(1.1, "Number of Rentals Per Customer",
+                                "Customer Name", "Average Rental Period", 2,
+                                "bar", True, {"limit": "500"})
+query2: MySQLQuery = MySQLQuery(1.1, "Total Rentals Per Customer",
                                 querystr2, "Customer ID", "Number of Rentals",
                                 2)
 query3: MySQLQuery = MySQLQuery(1.3, "Specified Rental Activity", querystr3,
@@ -197,18 +201,19 @@ query5: MySQLQuery = MySQLQuery(2.2, "Average Rental Rate Per Category",
                                 "Average Rentals per Day", 2)
 query6: MySQLQuery = MySQLQuery(2.3, "Top Rentals In Category", querystr6,
                                 "Title of DVD", "Total Rentals", 2,
-                                "bar", True, {"category": "Action"})
+                                "bar", True, {"category": "Sports"})
 query7: MySQLQuery = MySQLQuery(3.1, "Number of Rentals Per Actor", querystr7,
                                 "Actor Name", "Number of Rentals", 2)
 query8: MySQLQuery = MySQLQuery(3.2, "Number of Rentals Per Actor In Category",
                                 querystr8, "Actor Name", "Number of Rentals",
-                                2, "bar", True, {"category": "Action"})
+                                2, "bar", True, {"category": "Sports"})
 query9: MySQLQuery = MySQLQuery(3.3, "Top Actors By Rental Count", querystr9,
-                                "Actor Name", "Number of Rentals", 2)
+                                "Actor Name", "Number of Rentals", 2, "pie")
 query10: MySQLQuery = MySQLQuery(4.1, "Total Revenue Per Store", querystr10,
                                  "Store Address", "Total Revenue", 2, "pie")
 query11: MySQLQuery = MySQLQuery(4.2, "Average Payment Per Title", querystr11,
-                                 "DVD Title", "Average Payment", 2)
+                                 "DVD Title", "Average Payment", 2, "bar",
+                                 True, {"limit": "80"})
 query12: MySQLQuery = MySQLQuery(4.3, "Total Monthly Revenue", querystr12,
                                  "Month", "Total Revenue", 2, "line")
 
